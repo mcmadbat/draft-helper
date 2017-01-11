@@ -35,6 +35,7 @@ readBatterData();
 
 // routers
 var index = require('./routes/index');
+var api = require('./routes/api');
 
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
@@ -45,6 +46,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
+app.use('/api', api);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -134,7 +136,9 @@ function readPitcherData() {
         return val != -1;
       });
     } else {
-      dataObj.data.push(data);
+      dataObj.data.push(data.filter(val => {
+        return val != '';
+      }));
     }
   })
   .on('end', () => {
@@ -156,7 +160,9 @@ function readBatterData() {
         return val != -1;
       });
     } else {
-      dataObj.data.push(data);
+      dataObj.data.push(data.filter(val => {
+        return val != '';
+      }));
     }
   })
   .on('end', () => {
