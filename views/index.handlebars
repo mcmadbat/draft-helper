@@ -1,1 +1,56 @@
-<h1>Hello World!</h1>
+<div class='step step-1'>
+ <h1> Please First Select Your League Scoring Settings:</h1>
+ <div id='scoring_panel'>
+ </div>
+</div>
+
+<div class='step step-2' hidden>
+ <h2> step 2 </h2>
+</div>
+
+<script>
+
+	function setUpScoring(){
+		
+		let html = ''; // apppppppend
+		let batterKeys = {{{batterKeys}}};
+		let pitcherKeys = {{{pitcherKeys}}};
+		
+		// the discrete html for each stat
+		let pitcherStatHTML = pitcherKeys.map( val => {
+			return `<div class='stat_input col-sm-3' id='stat_${val}'>${val}:<input type='text' name='${val}' value='0'></input></div>`;
+		});
+		let battingStatHTML = batterKeys.map( val => {
+			return `<div class='stat_input col-sm-3' id='stat_${val}'>${val}:<input type='text' name='${val}' value='0'></input></div>`;
+		});
+
+		html+=`<form id='stats_form'>`;
+		html+= `<div class='pitching_stats'><h3> Pitching Stats: </h3>`;
+		pitcherStatHTML.forEach( val => {
+			html += val;
+		});
+		html += `</div>`;
+
+		html+= `<div class='batting_stats'><h3> Batting Stats: </h3>`;
+		pitcherStatHTML.forEach( val => {
+			html += val;
+		});
+		html+= `</div>`;
+		html+=`</form>`;
+
+		$('#scoring_panel').html(html);
+	};
+
+
+	$(document).ready(function(){
+		let query = {{{query}}};
+
+		if (Object.keys(query).length !== 0){
+			$('.step-1').hide();
+			$('.step-2').show();
+		} else {
+			// initialize scoring 
+			setUpScoring();	
+		}
+	});
+</script>

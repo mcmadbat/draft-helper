@@ -9,3 +9,12 @@ body {
   color: black;
   display: table;
 }
+
+/* form css */
+form input {
+	float: right;
+}
+
+form .stat_input {
+	padding-bottom: 10px;
+}
