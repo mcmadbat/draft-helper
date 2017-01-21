@@ -191,7 +191,7 @@
 
 			// get names 
 			$.ajax({
-			  url: '/api/players', 
+			  url: 'api/players', 
 			  success: function(result){
 		      players = result;
 		      let names = players.map(x => x.name);
