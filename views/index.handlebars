@@ -105,7 +105,7 @@
 				alert('Error: please select at least one stat to have non-zero point value');
 			} else {
 				query = `?${query.substr(0, query.length-1)}`;
-				window.location.href = `/${query}`;
+				window.location.href += `${query}`;
 			}
 		}
 	}
