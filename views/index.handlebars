@@ -1,45 +1,177 @@
-<div class='step step-1'>
- <h1> Please First Select Your League Scoring Settings:</h1>
+<div class='step step-1' hidden>
+ <h1> Please First Set Your League Scoring Settings:</h1>
  <div id='scoring_panel'>
  </div>
+
+ <button id='btn_confirm_scoring' onclick='confirm_scoring()' class='btn-primary btn'>Confirm</button>
+ <button id='btn_clear_scoring' onclick='clear_scoring()' class='btn-primary btn'>Clear</button>
 </div>
 
 <div class='step step-2' hidden>
- <h2> step 2 </h2>
+ <h2>Search players to compare: </h2>
+ <div class='search_panel col-sm-6'>
+ 	<h3 id='h3_player_one'>Player 1:</h3>
+ 	<div id='player_one'>
+ 		Name:<input type='text' name='name_one' id='input_name_one'></input>
+ 		<button onclick='getProjections("player_one")' class='btn-primary btn'>Search</button>
+ 		<div class='projection_div'>
+ 		</div>
+ 	</div>
+ </div>
+ <div class='search_panel col-sm-6'>
+ 	<h3 id='h3_player_two'>Player 2:</h3>
+ 	<div id='player_two'>
+ 		Name:<input type='text' name='player_two' id='input_name_two'></input>
+ 		<button onclick='getProjections("player_two")' class='btn-primary btn'>Search</button>
+ 		<div class='projection_div'>
+ 		</div>
+ 	</div>
+ </div>
 </div>
 
 <script>
+	var players = [];
+	var p_env = {}, b_env = {};
+	const batterKeys = {{{batterKeys}}};
+	const pitcherKeys = {{{pitcherKeys}}};
 
 	function setUpScoring(){
-		
 		let html = ''; // apppppppend
-		let batterKeys = {{{batterKeys}}};
-		let pitcherKeys = {{{pitcherKeys}}};
 		
 		// the discrete html for each stat
 		let pitcherStatHTML = pitcherKeys.map( val => {
-			return `<div class='stat_input col-sm-3' id='stat_${val}'>${val}:<input type='text' name='${val}' value='0'></input></div>`;
+			return `<div class='stat_input col-sm-3' id='stat_${val}'>${val}:<input type='text' name='${val}' id='p_${val}'value='0'></input></div>`;
 		});
 		let battingStatHTML = batterKeys.map( val => {
-			return `<div class='stat_input col-sm-3' id='stat_${val}'>${val}:<input type='text' name='${val}' value='0'></input></div>`;
+			return `<div class='stat_input col-sm-3' id='stat_${val}'>${val}:<input type='text' id='h_${val}' name='${val}' value='0'></input></div>`;
 		});
 
 		html+=`<form id='stats_form'>`;
-		html+= `<div class='pitching_stats'><h3> Pitching Stats: </h3>`;
+		html+= `<div class='pitching_stats col-sm-12'><h3> Pitching Stats: </h3>`;
 		pitcherStatHTML.forEach( val => {
 			html += val;
 		});
 		html += `</div>`;
 
-		html+= `<div class='batting_stats'><h3> Batting Stats: </h3>`;
-		pitcherStatHTML.forEach( val => {
+		html+= `<div class='batting_stats col-sm-12'><h3> Batting Stats: </h3>`;
+		battingStatHTML.forEach( val => {
 			html += val;
 		});
 		html+= `</div>`;
 		html+=`</form>`;
 
 		$('#scoring_panel').html(html);
-	};
+	}
+
+	// resets all the inputs to 0 points
+	function clear_scoring() {
+		$('.stat_input input').val('0');
+	}
+
+	function validate_inputs() {
+		let invalid_inputs = [];
+
+		$('.stat_input input').toArray().forEach(val => {
+			if (isNaN($(val).val())) invalid_inputs.push($(val).attr('id'));
+		});
+
+		return invalid_inputs.length === 0 ? false : invalid_inputs;
+	}
+
+	// generates the query string
+	function confirm_scoring() {
+		// first validate 
+		let invalid_inputs = validate_inputs();
+
+		if (invalid_inputs){
+			alert('Error: please make sure each stat has a numerical point value!');
+			
+			// clear each invalid input to 0
+			invalid_inputs.forEach( id => {
+				$(`#${id}`).val('0');
+			});
+		} else {
+			let query = '';
+			// build scoring query 
+			$('.stat_input input').toArray().forEach( input => {
+				if ($(input).val() != 0){
+					let id = $(input).attr('id');
+					let pts = parseInt($(input).val());
+					query += `${id}=${pts}&`;
+				}
+			});
+
+			if (query === ''){
+				alert('Error: please select at least one stat to have non-zero point value');
+			} else {
+				query = `?${query.substr(0, query.length-1)}`;
+				window.location.href = `/${query}`;
+			}
+		}
+	}
+
+	function buildProjectionItemDiv(name, value){
+		return `<div class='proj_item col-sm-4'><p><b>${name}</b>:      ${value}</p></div>`;
+	}
+
+	function buildTotalPointsDiv(value){
+		return `<div class='proj_item col-sm-12'><h4>Total Points:      ${value}</h4></div>`;
+	}
+
+	// gets the projected point total based on user selected scoring environment
+	function getScore(result, type) {
+		let score_env = type == 'batters' ? b_env : p_env;
+		let score = 0;
+
+		Object.keys(score_env).forEach(stat => {
+			score += score_env[stat] * result[stat];
+		});
+
+		return score;
+	}
+
+	function displayProjection(result, id, type) {
+		let html ='';
+		let divDom = $(`#${id} .projection_div`);
+
+		let keys = type == 'batters' ? batterKeys : pitcherKeys;
+
+		divDom.html(''); // clear html
+
+		keys.forEach( key => {
+			html += buildProjectionItemDiv(key, result[key]);
+		});
+
+		html += buildTotalPointsDiv(getScore(result, type));
+
+		divDom.html(html);
+
+		// change player name
+		$(`#h3_${id}`).html(`${result.Name}:`);
+	}
+
+	// gets projections and displays them
+	function getProjections(id){
+		let player_name = $(`#${id} input`).val();
+
+		let player = players.find(x => x.name == player_name);
+
+		if (player){
+			let projects;
+			let pid = player.id;
+
+			$.ajax({
+			  url: `/api/${player.type}?id=${pid}`, 
+			  success: res => {
+			  	displayProjection(res, id, player.type);
+			  }
+			});
+
+		} else {
+			alert(`Error: cannot find player ${player_name}`);
+			$(`#${id}`).val('');
+		}
+	}
 
 
 	$(document).ready(function(){
@@ -48,9 +180,48 @@
 		if (Object.keys(query).length !== 0){
 			$('.step-1').hide();
 			$('.step-2').show();
+
+			for (k in query){
+				let env = k[0] == 'h' ? b_env : p_env;
+				let stat = k.substr(2, k.length-1);
+
+				if (query[k] != 0)
+					env[stat] = query[k];
+			}
+
+			// get names 
+			$.ajax({
+			  url: '/api/players', 
+			  success: function(result){
+		      players = result;
+		      let names = players.map(x => x.name);
+		      $('#input_name_one').autocomplete({
+						source: names,
+						minlength: 1,
+						open: function(e, ui){},
+						close: function(e, ui){},
+						change: function(e, ui){
+						   //console.log(e);
+						}
+					});
+
+					$('#input_name_two').autocomplete({
+						source: names,
+						minlength: 1,
+						open: function(e, ui){},
+						close: function(e, ui){},
+						change: function(e, ui){
+						   //console.log(e);
+						}
+					});
+			  }
+			});
+
 		} else {
 			// initialize scoring 
 			setUpScoring();	
+			$('.step-1').show();
+			$('.step-2').hide();
 		}
 	});
 </script>

@@ -65,6 +65,8 @@ app.use(function(err, req, res, next) {
 	// only leak msg in development
 	let msg = app.get('env') === 'development' ? err.message : '';
 
+  console.error(msg);
+
 	// render the error page
 	return res.status( err.status || 500 ).send(msg);
 });

@@ -11,9 +11,14 @@ let validateScoringQuery = req => {
 
 	// all the scoring settings must correspond to a pitcher or batter stat
 	for (var x in query){
-		if (pitcherKeys[x] || batterKeys[x]){
+		let y = x.substr(2, x.length-1);
+
+		if (pitcherKeys.indexOf(y) !== -1 || batterKeys.indexOf(y) !== -1){
 			// check if number
-			if (isNaN(query[x])) return false; //scores must be numbers
+			if (isNaN(query[x])) {
+				return false; 
+			}
+				//scores must be numbers
 		} else {
 			return false;
 		}
@@ -23,7 +28,7 @@ let validateScoringQuery = req => {
 };
 
 const keysToIgnore = ['playerid', 'WAR', 'RA9-WAR', 'FIP', 'ERA', 'Name', 'Team', 
-	'AVG', 'OBP', 'BB/9', 'K/9', 'SLG', 'OPS', 'WHIP', 'wOBA', 'wRC+', 'BsR', 'Fld', 'Off', 'Def'];
+	'AVG', 'OBP', 'BB/9', 'K/9', 'SLG', 'OPS', 'WHIP', 'wOBA', 'wRC+', 'BsR', 'Fld', 'Off', 'Def', 'G', 'GS'];
 // functor used to ignore playerid in an array
 let filterToIgnore = val => (keysToIgnore.indexOf(val) === -1);
 

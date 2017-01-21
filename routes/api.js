@@ -23,14 +23,15 @@ router.get('/batterKeys', function(req, res) {
 
 // gets the player names (for autocomplete)
 router.get('/players', function(req, res) {
-  let func = obj => {
+  let func = (obj, type) => {
     return {
+      type,
       name: obj[0],
       id: obj[obj.length-1]
     }
   };
 
-  let names = [...req.app.locals.batterData.data.map(x => func(x)), ...req.app.locals.pitcherData.data.map(x => func(x))];
+  let names = [...req.app.locals.batterData.data.map(x => func(x, 'batters')), ...req.app.locals.pitcherData.data.map(x => func(x, 'pitchers'))];
   return res.status(200).json(names);
 });
 
