@@ -161,7 +161,7 @@
 			let pid = player.id;
 
 			$.ajax({
-			  url: `/api/${player.type}?id=${pid}`, 
+			  url: `api/${player.type}?id=${pid}`, 
 			  success: res => {
 			  	displayProjection(res, id, player.type);
 			  }
