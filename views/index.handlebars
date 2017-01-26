@@ -1,33 +1,41 @@
-<div class='step step-1' hidden>
- <h1> Please First Set Your League Scoring Settings:</h1>
- <div id='scoring_panel'>
- </div>
+<div class='_content'>
+	<div class= '_content_middle'>
+		<div class='container step step-1' hidden>
+			<h1> Please First Set Your League Scoring Settings:</h1>
+			<div id='scoring_panel'>
+ 			</div>
 
- <button id='btn_confirm_scoring' onclick='confirm_scoring()' class='btn-primary btn'>Confirm</button>
- <button id='btn_clear_scoring' onclick='clear_scoring()' class='btn-primary btn'>Clear</button>
+ 			<button id='btn_confirm_scoring' onclick='confirm_scoring()' class='btn-primary btn'>Confirm</button>
+ 			<button id='btn_clear_scoring' onclick='clear_scoring()' class='btn-primary btn'>Clear</button>
+		</div>
+
+		<div class='container step step-2' hidden>
+			<h4>You League Scoring Environment URL: </h4><input id='queryStr' readonly></input>
+ 			<h2>Search players to compare: </h2>
+
+ 			<div class='search_panel col-sm-6'>
+ 				<h3 id='h3_player_one'>Player 1:</h3>
+ 				<div id='player_one'>
+ 					Name:<input type='text' name='name_one' id='input_name_one'></input>
+ 					<button onclick='getProjections("player_one")' class='btn-primary btn'>Search</button>
+ 					<div class='projection_div'>
+ 					</div>
+ 				</div>
+ 			</div>
+
+ 			<div class='search_panel col-sm-6'>
+ 				<h3 id='h3_player_two'>Player 2:</h3>
+ 				<div id='player_two'>
+ 					Name:<input type='text' name='player_two' id='input_name_two'></input>
+ 					<button onclick='getProjections("player_two")' class='btn-primary btn'>Search</button>
+ 					<div class='projection_div'>
+ 					</div>
+ 				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
-<div class='step step-2' hidden>
- <h2>Search players to compare: </h2>
- <div class='search_panel col-sm-6'>
- 	<h3 id='h3_player_one'>Player 1:</h3>
- 	<div id='player_one'>
- 		Name:<input type='text' name='name_one' id='input_name_one'></input>
- 		<button onclick='getProjections("player_one")' class='btn-primary btn'>Search</button>
- 		<div class='projection_div'>
- 		</div>
- 	</div>
- </div>
- <div class='search_panel col-sm-6'>
- 	<h3 id='h3_player_two'>Player 2:</h3>
- 	<div id='player_two'>
- 		Name:<input type='text' name='player_two' id='input_name_two'></input>
- 		<button onclick='getProjections("player_two")' class='btn-primary btn'>Search</button>
- 		<div class='projection_div'>
- 		</div>
- 	</div>
- </div>
-</div>
 
 <script>
 	var players = [];
@@ -115,7 +123,7 @@
 	}
 
 	function buildTotalPointsDiv(value){
-		return `<div class='proj_item col-sm-12'><h4>Total Points:      ${value}</h4></div>`;
+		return `<div class='proj_item col-sm-12'><h3>Total Points:      ${value}</h3></div>`;
 	}
 
 	// gets the projected point total based on user selected scoring environment
@@ -178,6 +186,7 @@
 		let query = {{{query}}};
 
 		if (Object.keys(query).length !== 0){
+			$('#queryStr').attr('value', window.location);
 			$('.step-1').hide();
 			$('.step-2').show();
 
