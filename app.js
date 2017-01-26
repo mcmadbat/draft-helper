@@ -10,13 +10,21 @@ let csv = require('fast-csv');
 
 var app = express();
 
+// supress console.log for tests
+if ('test' == process.env.NODE_ENV){
+  console.error = function() {};
+}
+
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 var http = require('http');
 var server = http.createServer(app);
 
-server.listen(port);
+Promise.all([readPitcherData(),readBatterData()]).then(val => {
+  server.listen(port);
+});
+
 server.on('error', onError);
 server.on('listening', onListening);
 
@@ -29,9 +37,6 @@ var hbs = exphbs.create ( {
 app.set('views', path.join(__dirname, 'views'));
 app.engine('handlebars', hbs.engine );
 app.set('view engine', 'handlebars');
-
-readPitcherData();
-readBatterData();
 
 // routers
 var index = require('./routes/index');
@@ -122,6 +127,7 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   console.log('Listening on ' + bind);
+  app.emit('appStarted'); 
 }
 
 function readPitcherData() {
@@ -130,22 +136,26 @@ function readPitcherData() {
     data: []
   };
 
-  csv
-  .fromPath(path.join(__dirname, '/data/pitcher.csv'))
-  .on('data', data => {
-    if (!dataObj.keys){
-      dataObj.keys = data.filter(val => {
-        return val != -1;
+  return new Promise (function (resolve, reject){
+    csv
+      .fromPath(path.join(__dirname, '/data/pitcher.csv'))
+      .on('data', data => {
+        if (!dataObj.keys){
+          dataObj.keys = data.filter(val => {
+            return val != -1;
+          });
+        } else {
+          dataObj.data.push(data.filter(val => {
+            return val != '';
+          }));
+        }
+      })
+      .on('end', () => {
+        app.locals.pitcherData = dataObj;
+        resolve(1);
       });
-    } else {
-      dataObj.data.push(data.filter(val => {
-        return val != '';
-      }));
-    }
-  })
-  .on('end', () => {
-    app.locals.pitcherData = dataObj;
   });
+  
 }
 
 function readBatterData() {
@@ -154,20 +164,23 @@ function readBatterData() {
     data: []
   };
 
-  csv
-  .fromPath(path.join(__dirname, '/data/position.csv'))
-  .on('data', data => {
-    if (!dataObj.keys){
-      dataObj.keys = data.filter(val => {
-        return val != -1;
+  return new Promise (function (resolve, reject){
+    csv
+      .fromPath(path.join(__dirname, '/data/position.csv'))
+      .on('data', data => {
+        if (!dataObj.keys){
+          dataObj.keys = data.filter(val => {
+            return val != -1;
+          });
+        } else {
+          dataObj.data.push(data.filter(val => {
+            return val != '';
+          }));
+        }
+      })
+      .on('end', () => {
+        app.locals.batterData = dataObj;
+        resolve(1);
       });
-    } else {
-      dataObj.data.push(data.filter(val => {
-        return val != '';
-      }));
-    }
-  })
-  .on('end', () => {
-    app.locals.batterData = dataObj;
   });
 }
